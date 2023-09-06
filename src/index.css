@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+.dark {
+  @apply bg-slate-800 text-zinc-50;
+}
+
+.article-list-container {
+  display: flex;
+  flex-direction: column; /* By default, stack elements vertically */
+}
+
+/* Media query for screens wider than 768px (adjust as needed) */
+@media screen and (min-width: 769px) {
+  /* Adjust the layout for wider screens while keeping the width the same */
+  .article-list-container {
+    flex-direction: row; /* Switch to horizontal layout */
+  }
+  .favorite-component {
+    width: 100%;
+    background-color: aqua;
+  }
+}
+
+
