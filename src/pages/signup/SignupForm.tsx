@@ -15,6 +15,7 @@ const SignupForm: React.FC = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<Inputs>();
+  console.log(errors);
 
   const navigate = useNavigate();
 
@@ -48,14 +49,15 @@ const SignupForm: React.FC = () => {
       console.error("Sign-up failed:", error);
     }
   };
-  const handleSignin = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    navigate("/signin");
-  };
+  // const handleSignin = (event: React.MouseEvent<HTMLButtonElement>) => {
+  //   event.preventDefault();
+  //   navigate("/signin");
+  // };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
+        
         <label className="block text-gray-700 font-semibold mb-2">
           Your Name:
         </label>

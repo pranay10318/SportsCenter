@@ -7,10 +7,6 @@ interface Team {
   name: string;
   plays: string;
 }
-interface Sport {
-  id: number;
-  name: string;
-}
 
 const PreferencesDialog: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,65 +15,83 @@ const PreferencesDialog: React.FC = () => {
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchPreferences = async () => {
-    try {
-      const response = await fetch(`${API_ENDPOINT}/user/preferences`); // Replace with your API endpoint
-      if (response.ok) {
-        const data = await response.json();
-        const preferences = data.preferences;
-
-        if (preferences && preferences.favoriteSports) {
-          setSelectedSports(preferences.favoriteSports);
-        }
-
-        if (preferences && preferences.favoriteTeams) {
-          setSelectedTeams(preferences.favoriteTeams);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching preferences:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSports = async () => {
-    try {
-      const response = await fetch(`${API_ENDPOINT}/sports`); // Replace with your API endpoint
-      if (response.ok) {
-        const data = await response.json();
-        const sports = data.map((sport: Sport) => sport.name);
-        setFavoriteSports(sports);
-      }
-    } catch (error) {
-      console.error("Error fetching favorite sports:", error);
-    }
-  };
-
-  const fetchTeams = async () => {
-    try {
-      const response = await fetch(`${API_ENDPOINT}/teams`); // Replace with your API endpoint
-      if (response.ok) {
-        const data = await response.json();
-        const teams = data.map((team: Team) => team.name);
-        setFavoriteTeams(teams);
-      }
-    } catch (error) {
-      console.error("Error fetching favorite teams:", error);
-    }
-  };
+  const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
-    if (isOpen && loading) {
-      fetchPreferences();
-      fetchSports();
-      fetchTeams();
-    }
+    console.log(isOpen, "dafa II", loading);
+
+    const fetchSports = async () => {
+      try {
+        const response = await fetch(`${API_ENDPOINT}/sports`);
+        if (response.ok) {
+          const data = await response.json();
+
+          if (Array.isArray(data)) {
+            setFavoriteSports(data);
+          } else {
+            // Handle the case where data is not an array (e.g., display an error message)
+            console.error("Favorite sports data is not an array:", data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching favorite sports:", error);
+      }
+    };
+    fetchSports();
+  }, [isOpen, loading]);
+  useEffect(() => {
+    console.log(isOpen, "dafa II", loading);
+    const fetchPreferences = async () => {
+      try {
+        const response = await fetch(`${API_ENDPOINT}/user/preferences`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const preferences = data.preferences;
+
+          if (preferences && preferences.favoriteSports) {
+            setSelectedSports(preferences.favoriteSports);
+          }
+
+          if (preferences && preferences.favoriteTeams) {
+            setSelectedTeams(preferences.favoriteTeams);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching preferences:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPreferences();
+  }, [isOpen, loading, authToken]);
+
+  useEffect(() => {
+    console.log(isOpen, "dafa II", loading);
+    const fetchTeams = async () => {
+      try {
+        const response = await fetch(`${API_ENDPOINT}/teams`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data, "data ... . ");
+          const teams = data.map((team: Team) => team.name);
+          console.log(teams, "teams ... .");
+          setFavoriteTeams(teams);
+        }
+      } catch (error) {
+        console.error("Error fetching favorite teams:", error);
+      }
+    };
+    fetchTeams();
   }, [isOpen, loading]);
 
   const openModal = () => {
     setIsOpen(true);
+    console.log(isOpen, "dafa ", loading);
   };
 
   const closeModal = () => {
@@ -85,18 +99,18 @@ const PreferencesDialog: React.FC = () => {
   };
 
   const handleSavePreferences = async () => {
-    // Prepare the preferences object
     const updatedPreferences = {
       favoriteSports: selectedSports,
       favoriteTeams: selectedTeams,
     };
 
     try {
-      const response = await fetch("/user/preferences", {
+      const response = await fetch(`${API_ENDPOINT}/user/preferences`, {
         method: "PATCH",
         body: JSON.stringify({ preferences: updatedPreferences }),
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
         },
       });
 

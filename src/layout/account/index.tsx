@@ -1,5 +1,4 @@
 // layout/account/index.tsx
-import * as React from "react";
 import { Outlet } from "react-router-dom";
 import Appbar from "./Appbar";
 

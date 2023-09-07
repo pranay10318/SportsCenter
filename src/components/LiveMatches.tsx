@@ -29,10 +29,8 @@ const LiveMatches: React.FC = () => {
         }
         const data: { matches: Match[] } = await response.json();
 
-        // Filter live matches based on the isRunning property
         const liveMatchesData = data.matches.filter((match) => match.isRunning);
 
-        // Fetch details for each live match
         const liveMatchesDetails = await Promise.all(
           liveMatchesData.map(async (match) => {
             const matchDetailsResponse = await fetch(
@@ -68,10 +66,12 @@ const LiveMatches: React.FC = () => {
               <p className="text-xl font-semibold">{match.sportName}</p>
               <p className="text-lg font-medium">{match.name}</p>
               <div className="flex justify-between">
-                <p>{match.teams[0].name}</p> <p>{match.score[match.teams[0].name]}</p>
+                <p>{match.teams[0].name}</p>{" "}
+                <p>{match.score[match.teams[0].name]}</p>
               </div>
               <div className="flex justify-between">
-                <p>{match.teams[1].name}</p> <p>{match.score[match.teams[1].name]}</p>
+                <p>{match.teams[1].name}</p>{" "}
+                <p>{match.score[match.teams[1].name]}</p>
               </div>
             </div>
           ))}
