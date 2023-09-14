@@ -15,6 +15,8 @@ const casualUserNavigation = [
   { name: "Sign in", href: "/signin" },
   { name: "Sign up", href: "/signup" },
 ];
+// Open Preferences
+
 
 const classNames = (...classes: string[]): string =>
   classes.filter(Boolean).join(" ");
@@ -29,7 +31,6 @@ const Appbar = () => {
   const handleDialog = () => {
     setIsPreferencesOpen(!isPreferencesOpen);
   }
-
 
   return (
     <>
@@ -52,16 +53,18 @@ const Appbar = () => {
               </div>
               <div className="md:block">
                 <div className="ml-4 flex items-center md:ml-6">
-                  {localStorage.getItem("authToken") && (
-                    <div className="md:block">
-                      <button onClick={handleDialog}>
-                        <CogIcon
-                          className="w-6 h-6 text-gray-500"
-                        />
-                      </button>
-                      {isPreferencesOpen && <PreferencesDialog/>}
-                    </div>
-                  )}
+                  {
+                    localStorage.getItem("authToken") && (
+                      <div className="md:block">
+                        <button onClick={handleDialog}>
+                          <CogIcon
+                            className="w-6 h-6 text-gray-500"
+                          />
+                        </button>
+                        {isPreferencesOpen && <PreferencesDialog/>}
+                      </div>
+                    )
+                  }
 
                   <Menu as="div" className="relative ml-3">
                     <div>

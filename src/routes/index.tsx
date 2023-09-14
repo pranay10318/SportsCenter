@@ -23,7 +23,6 @@ const router = createBrowserRouter([
     element: <Logout />,
   },
   {
-    // For any other routes not matched by the specified paths, the NotFound component is rendered.
     path: "*",
     element: <NotFound />,
   },

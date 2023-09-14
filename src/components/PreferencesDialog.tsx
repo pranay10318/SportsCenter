@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { API_ENDPOINT } from "../config/constants";
+// import { PreferenceContext } from "../context/preference";
+import { usePreferencesDispatch } from "../context/preferences/context";
+import { updatePreferences } from "../context/preferences/actions";
 
 interface Team {
   id: number;
   name: string;
   plays: string;
 }
+interface Sport {
+  id: number;
+  name: string;
+}
 
 const PreferencesDialog: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [favoriteSports, setFavoriteSports] = useState<string[]>([]);
   const [favoriteTeams, setFavoriteTeams] = useState<string[]>([]);
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
@@ -17,30 +24,23 @@ const PreferencesDialog: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const authToken = localStorage.getItem("authToken");
 
+  // const { setPreferences } = useContext(PreferenceContext);
   useEffect(() => {
-    console.log(isOpen, "dafa II", loading);
-
     const fetchSports = async () => {
       try {
         const response = await fetch(`${API_ENDPOINT}/sports`);
         if (response.ok) {
           const data = await response.json();
-
-          if (Array.isArray(data)) {
-            setFavoriteSports(data);
-          } else {
-            // Handle the case where data is not an array (e.g., display an error message)
-            console.error("Favorite sports data is not an array:", data);
-          }
+          const dataArr = data.sports;
+          const sports = dataArr.map((sport: Sport) => sport.name);
+          setFavoriteSports(sports);
         }
       } catch (error) {
         console.error("Error fetching favorite sports:", error);
       }
     };
     fetchSports();
-  }, [isOpen, loading]);
-  useEffect(() => {
-    console.log(isOpen, "dafa II", loading);
+
     const fetchPreferences = async () => {
       try {
         const response = await fetch(`${API_ENDPOINT}/user/preferences`, {
@@ -60,6 +60,8 @@ const PreferencesDialog: React.FC = () => {
           if (preferences && preferences.favoriteTeams) {
             setSelectedTeams(preferences.favoriteTeams);
           }
+
+          console.log(preferences);
         }
       } catch (error) {
         console.error("Error fetching preferences:", error);
@@ -68,18 +70,13 @@ const PreferencesDialog: React.FC = () => {
       }
     };
     fetchPreferences();
-  }, [isOpen, loading, authToken]);
 
-  useEffect(() => {
-    console.log(isOpen, "dafa II", loading);
     const fetchTeams = async () => {
       try {
         const response = await fetch(`${API_ENDPOINT}/teams`);
         if (response.ok) {
           const data = await response.json();
-          console.log(data, "data ... . ");
           const teams = data.map((team: Team) => team.name);
-          console.log(teams, "teams ... .");
           setFavoriteTeams(teams);
         }
       } catch (error) {
@@ -87,42 +84,34 @@ const PreferencesDialog: React.FC = () => {
       }
     };
     fetchTeams();
-  }, [isOpen, loading]);
+  }, [isOpen, loading, authToken]);
 
-  const openModal = () => {
-    setIsOpen(true);
-    console.log(isOpen, "dafa ", loading);
-  };
+  // const openModal = () => {
+  //   setIsOpen(true);
+  // };
 
   const closeModal = () => {
     setIsOpen(false);
   };
-
+  const dispatch = usePreferencesDispatch();
+  // const preferences:any = usePreferencesState();
   const handleSavePreferences = async () => {
     const updatedPreferences = {
       favoriteSports: selectedSports,
       favoriteTeams: selectedTeams,
     };
-
+  
     try {
-      const response = await fetch(`${API_ENDPOINT}/user/preferences`, {
-        method: "PATCH",
-        body: JSON.stringify({ preferences: updatedPreferences }),
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-
-      if (response.ok) {
-        closeModal();
-      } else {
-        console.error("Failed to update preferences");
-      }
+      updatePreferences(dispatch, updatedPreferences); // Dispatch the action
+  
+      // The rest of your code remains the same
+      closeModal();
+  
     } catch (error) {
       console.error("Error updating preferences:", error);
     }
   };
+  
 
   const handleSportCheckboxChange = (sport: string) => {
     setSelectedSports((prevSelectedSports) => {
@@ -146,7 +135,7 @@ const PreferencesDialog: React.FC = () => {
 
   return (
     <>
-      <button onClick={openModal}>Open Preferences</button>
+      {/* <button onClick={openModal}>Open Preferences</button> */}
 
       <Transition appear show={isOpen} as={React.Fragment}>
         <Dialog
@@ -180,39 +169,51 @@ const PreferencesDialog: React.FC = () => {
                 <h3 className="text-lg font-medium leading-6 text-gray-900">
                   Preferences
                 </h3>
-                <div className="mt-4">
-                  <h4 className="text-md font-medium leading-6 text-gray-700">
-                    Favorite Sports
-                  </h4>
-                  {favoriteSports.map((sport) => (
-                    <label key={sport} className="flex items-center mt-2">
-                      <input
-                        type="checkbox"
-                        value={sport}
-                        checked={selectedSports.includes(sport)}
-                        onChange={() => handleSportCheckboxChange(sport)}
-                        className="form-checkbox h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                      />
-                      <span className="ml-2">{sport}</span>
-                    </label>
-                  ))}
-                </div>
-                <div className="mt-4">
-                  <h4 className="text-md font-medium leading-6 text-gray-700">
-                    Favorite Teams
-                  </h4>
-                  {favoriteTeams.map((team) => (
-                    <label key={team} className="flex items-center mt-2">
-                      <input
-                        type="checkbox"
-                        value={team}
-                        checked={selectedTeams.includes(team)}
-                        onChange={() => handleTeamCheckboxChange(team)}
-                        className="form-checkbox h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
-                      />
-                      <span className="ml-2">{team}</span>
-                    </label>
-                  ))}
+                <div className="mt-4 flex flex-wrap">
+                  <div className="mr-4">
+                    <h4 className="text-md font-medium leading-6 text-gray-700">
+                      Favorite Sports
+                    </h4>
+                    <div className="flex flex-wrap space-x-2">
+                      {favoriteSports.map((sport) => (
+                        <label
+                          key={sport}
+                          className="flex items-center mr-4 mb-2"
+                        >
+                          <input
+                            type="checkbox"
+                            value={sport}
+                            checked={selectedSports.includes(sport)}
+                            onChange={() => handleSportCheckboxChange(sport)}
+                            className="form-checkbox h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                          />
+                          <span className="ml-2">{sport}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-md font-medium leading-6 text-gray-700">
+                      Favorite Teams
+                    </h4>
+                    <div className="flex flex-wrap space-x-2">
+                      {favoriteTeams.map((team) => (
+                        <label
+                          key={team}
+                          className="flex items-center mr-4 mb-2"
+                        >
+                          <input
+                            type="checkbox"
+                            value={team}
+                            checked={selectedTeams.includes(team)}
+                            onChange={() => handleTeamCheckboxChange(team)}
+                            className="form-checkbox h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300 rounded"
+                          />
+                          <span className="ml-2">{team}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <div className="mt-4">
                   <button
